@@ -69,12 +69,50 @@ def preprocess(df):
     df['OvertimePay'] = scaler.fit_transform(df[['OvertimePay']])
     df['OtherPay'] = scaler.fit_transform(df[['OtherPay']])
     df['Benefits'] = scaler.fit_transform(df[['Benefits']])
-    df['TotalPay'] = scaler.fit_transform(df[['TotalPay']])
+
     df['TotalPayBenefits'] = scaler.fit_transform(df[['TotalPayBenefits']])
     df['Year'] = scaler.fit_transform(df[['Year']])
 
-    return df.drop(columns=['Id', 'Notes','EmployeeName', 'Agency'])
+    return df.drop(columns=['Id', 'Notes','EmployeeName', 'Agency', 'TotalPayBenefits'])
 
 
-dataset = preprocess(dataset)
+train_df, test_df = train_test_split(dataset, test_size=0.2, random_state=42)
+train_df = preprocess(train_df)
+test_df = preprocess(test_df)
 
+y_train = train_df['TotalPay']
+x_train = train_df.drop(columns=['TotalPay'])
+
+y_test = test_df['TotalPay']
+x_test = test_df.drop(columns=['TotalPay'])
+
+linear_model = LinearRegression()
+linear_model.fit(x_train, y_train)
+y_pred = linear_model.predict(x_test)
+
+print(f'\n\n=========== Linear Regression Metrics ===========')
+print(f"Mean Absolute Error: {mean_absolute_error(y_test, y_pred)}")
+print(f"Mean Squared Error: {mean_squared_error(y_test, y_pred)}")
+print(f"Root Mean Squared Error: {np.sqrt(mean_squared_error(y_test, y_pred))}")
+print(f"R2 Score: {r2_score(y_test, y_pred)}")
+
+ridge_model = Ridge()
+ridge_model.fit(x_train, y_train)
+y_pred = ridge_model.predict(x_test)
+
+print(f'\n\n=========== Ridge Metrics ===========')
+print(f"Mean Absolute Error: {mean_absolute_error(y_test, y_pred)}")
+print(f"Mean Squared Error: {mean_squared_error(y_test, y_pred)}")
+print(f"Root Mean Squared Error: {np.sqrt(mean_squared_error(y_test, y_pred))}")
+print(f"R2 Score: {r2_score(y_test, y_pred)}")
+
+lasso_model = Lasso()
+lasso_model.fit(x_train, y_train)
+y_pred = lasso_model.predict(x_test)
+
+
+print(f'\n\n=========== Lasso Metrics ===========')
+print(f"Mean Absolute Error: {mean_absolute_error(y_test, y_pred)}")
+print(f"Mean Squared Error: {mean_squared_error(y_test, y_pred)}")
+print(f"Root Mean Squared Error: {np.sqrt(mean_squared_error(y_test, y_pred))}")
+print(f"R2 Score: {r2_score(y_test, y_pred)}")
