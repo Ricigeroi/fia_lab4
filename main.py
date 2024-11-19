@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 from matplotlib.pyplot import figure
 from scipy.cluster.hierarchy import average
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
 from sklearn.inspection import permutation_importance
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
@@ -75,8 +77,33 @@ def preprocess(df):
 
     return df.drop(columns=['Id', 'Notes','EmployeeName', 'Agency', 'TotalPayBenefits'])
 
+dataset_copy = dataset.copy()
+# Preprocess the entire dataset
+dataset = preprocess(dataset)
 
-train_df, test_df = train_test_split(dataset, test_size=0.2, random_state=42)
+# Exclude the target variable 'TotalPay' for clustering
+X = dataset.drop(columns=['TotalPay'])
+
+# Perform K-means clustering
+kmeans = KMeans(n_clusters=4, random_state=42)
+kmeans.fit(X)
+labels = kmeans.labels_
+
+# Reduce dimensions for visualization
+pca = PCA(n_components=2)
+X_pca = pca.fit_transform(X)
+
+# Plot the clusters
+plt.figure(figsize=(10, 7))
+scatter = plt.scatter(X_pca[:, 0], X_pca[:, 1], c=labels, cmap='viridis', alpha=0.6)
+plt.title('K-means Clustering with 4 Clusters')
+plt.xlabel('PCA Component 1')
+plt.ylabel('PCA Component 2')
+plt.legend(*scatter.legend_elements(), title="Clusters")
+plt.show()
+
+
+train_df, test_df = train_test_split(dataset_copy, test_size=0.2, random_state=42)
 train_df = preprocess(train_df)
 test_df = preprocess(test_df)
 
